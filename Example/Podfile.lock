@@ -1,0 +1,99 @@
+PODS:
+  - CommonCryptoModule (1.0.2)
+  - ExtensibleEnumeratedName (1.0.1)
+  - WolfAnimation (1.0):
+    - WolfConcurrency
+    - WolfFoundation
+    - WolfLog
+  - WolfApp (1.0):
+    - WolfAnimation
+    - WolfConcurrency
+    - WolfFoundation
+    - WolfLocale
+    - WolfOSBridge
+  - WolfConcurrency (1.0):
+    - WolfFoundation
+    - WolfLog
+    - WolfNumerics
+  - WolfFoundation (1.0):
+    - WolfNumerics
+    - WolfPipe
+    - WolfStrings
+  - WolfLocale (1.0.1):
+    - ExtensibleEnumeratedName
+    - WolfLog
+    - WolfStrings
+  - WolfLog (1.0.1):
+    - ExtensibleEnumeratedName
+    - WolfNumerics
+    - WolfStrings
+  - WolfNetwork (1.0):
+    - ExtensibleEnumeratedName
+    - WolfApp
+    - WolfConcurrency
+    - WolfFoundation
+    - WolfLocale
+    - WolfLog
+    - WolfPipe
+    - WolfPubSub
+    - WolfSec
+    - WolfStrings
+  - WolfNumerics (1.0.1)
+  - WolfOSBridge (1.0)
+  - WolfPipe (1.0.1)
+  - WolfPubSub (1.0):
+    - WolfConcurrency
+    - WolfFoundation
+  - WolfSec (1.0):
+    - CommonCryptoModule
+    - WolfPipe
+    - WolfStrings
+  - WolfStrings (1.0.1):
+    - ExtensibleEnumeratedName
+    - WolfNumerics
+    - WolfPipe
+
+DEPENDENCIES:
+  - WolfNetwork (from `../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - CommonCryptoModule
+    - ExtensibleEnumeratedName
+    - WolfAnimation
+    - WolfApp
+    - WolfConcurrency
+    - WolfFoundation
+    - WolfLocale
+    - WolfLog
+    - WolfNumerics
+    - WolfOSBridge
+    - WolfPipe
+    - WolfPubSub
+    - WolfSec
+    - WolfStrings
+
+EXTERNAL SOURCES:
+  WolfNetwork:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  CommonCryptoModule: 63a68b57abed79655b3a01011419bf037a05b0a0
+  ExtensibleEnumeratedName: 70c35288c7e34eff64b4b1da8b0c6e993013738b
+  WolfAnimation: 2e3e73b55af618bfa62601bd7dc64831386af076
+  WolfApp: 32c36657480ce514cff3a493be65a958201f77e0
+  WolfConcurrency: 6441a2ee3487398b02f78fc87b52659972cbbbb8
+  WolfFoundation: 90959f037de362da543adfdbe347f79c28e7f0db
+  WolfLocale: b70f1b375fa37a70f9ec4152db3f656e0dec12e6
+  WolfLog: e6e60ea7593e9fb1962d319a6bc190045f4f1e6e
+  WolfNetwork: 619e7d6fcf8c9bed71f3ad4d6a7d806df6adabd8
+  WolfNumerics: 47d911caaf5350fc838b638ca47a5427b676d275
+  WolfOSBridge: 238f042a7978e522c9ec0644dca85248d7e30148
+  WolfPipe: 7ddf803ae6bc9d42d34120bcce43d25940e3c791
+  WolfPubSub: 7bc645d58aa2eb17f65dbdd66d379821bcc9994a
+  WolfSec: 1f483d6712b5703503d29f974955934fa8f7a766
+  WolfStrings: 0691ee5c7aae7c040a6552ca97ddfa510ecccf88
+
+PODFILE CHECKSUM: 5881513b91c5d8d0f371035b14a70fd542d6a66e
+
+COCOAPODS: 1.6.0.beta.1

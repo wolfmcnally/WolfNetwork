@@ -1,0 +1,11 @@
+use_frameworks!
+
+platform :ios, '12.0'
+
+target 'WolfNetwork_Example' do
+  pod 'WolfNetwork', :path => '../'
+
+  target 'WolfNetwork_Tests' do
+    inherit! :search_paths
+  end
+end
