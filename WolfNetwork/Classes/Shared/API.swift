@@ -118,10 +118,10 @@ open class API<T: AuthorizationProtocol> {
     public func newPromise<T: Decodable, Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Promise<T> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
-            return HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock).then { data in
+            return HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||> { data in
                 return try JSONDecoder().decode(T.self, from: data)
-                }.recover { (error, promise) in
-                    self.handle(error: error, promise: promise)
+            } ||? { (error, promise) in
+                self.handle(error: error, promise: promise)
             }
         } catch let error {
             return Promise<T>(error: error)
@@ -131,10 +131,10 @@ open class API<T: AuthorizationProtocol> {
     public func newPromise<T: Decodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Promise<T> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
-            return HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock).then { data in
+            return HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||> { data in
                 return try JSONDecoder().decode(T.self, from: data)
-                }.recover { (error, promise) in
-                    self.handle(error: error, promise: promise)
+            } ||? { (error, promise) in
+                self.handle(error: error, promise: promise)
             }
         } catch let error {
             return Promise<T>(error: error)
@@ -144,7 +144,7 @@ open class API<T: AuthorizationProtocol> {
     public func newPromise<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> SuccessPromise {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth, body: body)
-            return HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock).succeed().recover { (error, promise) in
+            return HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||? { (error, promise) in
                 self.handle(error: error, promise: promise)
             }
         } catch let error {
@@ -155,7 +155,7 @@ open class API<T: AuthorizationProtocol> {
     public func newPromise(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> SuccessPromise {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth)
-            return HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock).succeed().recover { (error, promise) in
+            return HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||? { (error, promise) in
                 self.handle(error: error, promise: promise)
             }
         } catch let error {
