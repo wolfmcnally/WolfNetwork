@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = 'WolfNetwork'
-    s.version          = '1.0.1'
+    s.version          = '1.0.2'
     s.summary          = 'Tools for working with networking, particularly REST/JSON.'
 
     s.homepage         = 'https://github.com/wolfmcnally/WolfNetwork'
