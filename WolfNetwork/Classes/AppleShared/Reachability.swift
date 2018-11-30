@@ -10,7 +10,7 @@ import Foundation
 import SystemConfiguration
 import WolfPipe
 import WolfLog
-import WolfStrings
+import WolfFoundation
 import WolfConcurrency
 import WolfPubSub
 

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = 'WolfNetwork'
-    s.version          = '1.0.2'
+    s.version          = '1.0.3'
     s.summary          = 'Tools for working with networking, particularly REST/JSON.'
 
     s.homepage         = 'https://github.com/wolfmcnally/WolfNetwork'
@@ -27,7 +27,6 @@ Pod::Spec.new do |s|
 
     s.dependency 'WolfPipe'
     s.dependency 'WolfLog'
-    s.dependency 'WolfStrings'
     s.dependency 'WolfLocale'
     s.dependency 'ExtensibleEnumeratedName'
     s.dependency 'WolfConcurrency'

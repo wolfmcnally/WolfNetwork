@@ -23,7 +23,6 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfStrings
 
 extension URLComponents {
     public var queryDictionary: [String: String] {
@@ -67,14 +66,16 @@ extension URLComponents {
 
         self.host = host
 
-        let joiner = Joiner(left: "/", separator: "/")
+        var components = [String]()
         if let basePath = basePath {
-            joiner.append(basePath)
+            components.append(basePath)
         }
         if let pathComponents = pathComponents {
-            joiner.append(contentsOf: pathComponents)
+            for c in pathComponents {
+                components.append("\(c)")
+            }
         }
-        self.path = joiner.description
+        self.path = "/" + components.joined(separator: "/")
 
         if let query = query {
             queryDictionary = query
