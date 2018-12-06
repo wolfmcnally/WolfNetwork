@@ -270,7 +270,6 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-WolfNetwork_Example/Pods-WolfNetwork_Example-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/CommonCryptoModule/CommonCryptoModule.framework",
 				"${BUILT_PRODUCTS_DIR}/ExtensibleEnumeratedName/ExtensibleEnumeratedName.framework",
 				"${BUILT_PRODUCTS_DIR}/WolfAnimation/WolfAnimation.framework",
 				"${BUILT_PRODUCTS_DIR}/WolfApp/WolfApp.framework",
@@ -290,7 +289,6 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CommonCryptoModule.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ExtensibleEnumeratedName.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WolfAnimation.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WolfApp.framework",

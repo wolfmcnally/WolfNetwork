@@ -24,6 +24,7 @@
 
 import WolfLog
 import WolfConcurrency
+import WolfFoundation
 
 public internal(set) var inFlightTracker: InFlightTracker?
 

@@ -33,7 +33,7 @@ extension Error {
     }
 }
 
-public struct HTTPError: DescriptiveError {
+public struct HTTPError: CodedError {
     public let request: URLRequest
     public let response: HTTPURLResponse
     public let data: Data?

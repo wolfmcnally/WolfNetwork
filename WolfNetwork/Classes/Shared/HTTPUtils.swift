@@ -215,29 +215,23 @@ public class HTTP {
         func onComplete(promise: DataPromise, task: Cancelable?, error: Error?, response: URLResponse?, data: Data?) {
             guard error == nil else {
                 switch error {
-                case let error as DescriptiveError:
-                    if error.isCancelled {
-                        if let inFlightTracker = inFlightTracker, let token = token {
-                            inFlightTracker.end(withToken: token, result: Result<Void>.canceled)
-                            logTrace("\(token) retrieveData was cancelled")
-                        } else {
-                            logTrace("retrieveData was cancelled")
-                        }
-                    }
-                    dispatchOnMain {
-                        promise.fail(error)
+                case is Canceled:
+                    if let inFlightTracker = inFlightTracker, let token = token {
+                        inFlightTracker.end(withToken: token, result: Result<Void, Canceled>.error(canceled))
+                        logTrace("\(token) retrieveData was cancelled")
+                    } else {
+                        logTrace("retrieveData was cancelled")
                     }
                 default:
                     if let inFlightTracker = inFlightTracker, let token = token {
-                        inFlightTracker.end(withToken: token, result: Result<Error>.failure(error!))
+                        inFlightTracker.end(withToken: token, result: Result<Void, AnyError>.error(AnyError(error!)))
                         logError("\(token) retrieveData returned error")
                     } else {
                         logError("retrieveData returned error")
                     }
-
-                    dispatchOnMain {
-                        promise.fail(error!)
-                    }
+                }
+                dispatchOnMain {
+                    promise.fail(error!)
                 }
                 return
             }
@@ -250,7 +244,7 @@ public class HTTP {
                 let error = HTTPError(request: request, response: httpResponse)
 
                 if let inFlightTracker = inFlightTracker, let token = token {
-                    inFlightTracker.end(withToken: token, result: Result<HTTPError>.failure(error))
+                    inFlightTracker.end(withToken: token, result: Result<Void, HTTPError>.error(error))
                     logError("\(token) no data returned")
                 } else {
                     logError("no data returned")
@@ -266,7 +260,7 @@ public class HTTP {
                 let error = HTTPError(request: request, response: httpResponse, data: data)
 
                 if let inFlightTracker = inFlightTracker, let token = token {
-                    inFlightTracker.end(withToken: token, result: Result<HTTPError>.failure(error))
+                    inFlightTracker.end(withToken: token, result: Result<Void, HTTPError>.error(error))
                     logError("\(token) unknown response code: \(httpResponse.statusCode)")
                 } else {
                     logError("unknown response code: \(httpResponse.statusCode)")
@@ -282,7 +276,7 @@ public class HTTP {
                 let error = HTTPError(request: request, response: httpResponse, data: data)
 
                 if let inFlightTracker = inFlightTracker, let token = token {
-                    inFlightTracker.end(withToken: token, result: Result<HTTPError>.failure(error))
+                    inFlightTracker.end(withToken: token, result: Result<Void, HTTPError>.error(error))
                     if !expectedFailureStatusCodes.contains(statusCode) {
                         logError("\(token) Failure response code: \(statusCode)")
                     }
@@ -299,7 +293,7 @@ public class HTTP {
             }
 
             if let inFlightTracker = inFlightTracker, let token = token {
-                inFlightTracker.end(withToken: token, result: Result<HTTPURLResponse>.success(httpResponse))
+                inFlightTracker.end(withToken: token, result: Result<HTTPURLResponse, NoError>.value(httpResponse))
             }
 
             let inFlightData = data!
