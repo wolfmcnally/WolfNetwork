@@ -2,7 +2,7 @@
 //  NetworkUtils.swift
 //  WolfNetwork
 //
-//  Created by Robert McNally on 2/1/16.
+//  Created by Wolf McNally on 2/1/16.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
