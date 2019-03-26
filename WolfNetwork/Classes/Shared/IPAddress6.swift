@@ -103,15 +103,14 @@ public class IPAddress6 {
 
     private static func toWords(_ data: Data) -> [UInt16] {
         assert(data.count == 16)
-        return data.withUnsafeBytes { (p: UnsafePointer<UInt8>) -> [UInt16] in
+        return data.withUnsafeBytes { p -> [UInt16] in
             var words = [UInt16]()
             words.reserveCapacity(8)
-            return p.withMemoryRebound(to: UInt16.self, capacity: 8) {
-                for index in 0..<8 {
-                    words.append(UInt16(bigEndian: $0[index]))
-                }
-                return words
+            let p2 = p.bindMemory(to: UInt16.self)
+            for index in 0..<8 {
+                words.append(UInt16(bigEndian: p2[index]))
             }
+            return words
         }
     }
 
@@ -147,7 +146,7 @@ public class IPAddress6 {
         } else if components.suffix(2) == ["", ""] {
             components = Array(components.dropLast(2))
             components.append("#")
-        } else if let index = components.index(of: "") {
+        } else if let index = components.firstIndex(of: "") {
             guard index != 0 && index != components.endIndex - 1 else {
                 throw ValidationError(message: "Invalid IP address.", violation: "ipv6Format")
             }
@@ -155,7 +154,7 @@ public class IPAddress6 {
         }
         //        print(components)
 
-        if let index = components.index(of: "#") {
+        if let index = components.firstIndex(of: "#") {
             let count = 9 - components.count
             let zeros = [String](repeating: "0", count: count)
             components.replaceSubrange(index...index, with: zeros)

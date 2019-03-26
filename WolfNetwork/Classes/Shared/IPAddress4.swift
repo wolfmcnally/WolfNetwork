@@ -61,7 +61,7 @@ public class IPAddress4 {
 extension IPAddress4 {
     public static func test() {
         do {
-            let data = Data(bytes: [127, 0, 0, 1])
+            let data = Data([127, 0, 0, 1])
             let encoded = data |> Data.ipAddress4
             assert(encoded == "127.0.0.1")
             print(encoded)

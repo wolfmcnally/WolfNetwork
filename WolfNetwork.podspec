@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = 'WolfNetwork'
-    s.version          = '1.0.4'
+    s.version          = '2.0.0'
     s.summary          = 'Tools for working with networking, particularly REST/JSON.'
 
     s.homepage         = 'https://github.com/wolfmcnally/WolfNetwork'
@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
     s.author           = { 'Wolf McNally' => 'wolf@wolfmcnally.com' }
     s.source           = { :git => 'https://github.com/wolfmcnally/WolfNetwork.git', :tag => s.version.to_s }
 
-    s.swift_version = '4.2'
+    s.swift_version = '5.0'
 
     s.ios.deployment_target = '10.0'
     s.ios.source_files = 'WolfNetwork/Classes/Shared/**/*', 'WolfNetwork/Classes/iOS/**/*', 'WolfNetwork/Classes/iOSShared/**/*', 'WolfNetwork/Classes/AppleShared/**/*'

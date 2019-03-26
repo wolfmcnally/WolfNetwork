@@ -43,7 +43,7 @@ public class Reachability {
         self.endpoint = endpoint
         let data = endpoint.host |> toUTF8
         networkReachability = data.withUnsafeBytes {
-            return SCNetworkReachabilityCreateWithName(nil, $0)!
+            return SCNetworkReachabilityCreateWithName(nil, $0.bindMemory(to: Int8.self).baseAddress!)!
         }
     }
 

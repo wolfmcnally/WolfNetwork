@@ -41,7 +41,9 @@ public class InFlightToken: Equatable, Hashable, CustomStringConvertible {
         self.name = name
     }
 
-    public var hashValue: Int { return id }
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 
     public var description: String {
         return "InFlightToken(id: \(id), name: \(name), result: \(result†))"
