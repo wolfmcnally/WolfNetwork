@@ -24,8 +24,6 @@
 
 import WolfConcurrency
 
-public typealias CredentialsPromise = Promise<Credentials>
-
 public enum CredentialsType: String, Codable {
     case username
     case email

@@ -28,6 +28,9 @@ import ExtensibleEnumeratedName
 import WolfLog
 import WolfConcurrency
 import WolfFoundation
+import WolfNIO
+
+public let httpEventLoopGroup = NIOTSEventLoopGroup(loopCount: 6, defaultQoS: .userInitiated)
 
 public enum HTTPUtilsError: Error {
     case expectedJSONDict
@@ -207,12 +210,12 @@ extension ConnectionType {
 }
 
 public class HTTP {
-    public static func retrieveData(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> DataPromise {
+    public static func retrieveData(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<Data> {
 
         let name = name ?? request.name
         let token = inFlightTracker?.start(withName: name)
 
-        func onComplete(promise: DataPromise, task: Cancelable?, error: Error?, response: URLResponse?, data: Data?) {
+        func onComplete(promise: Promise<Data>, error: Error?, response: URLResponse?, data: Data?) {
             guard error == nil else {
                 switch error {
                 case is Canceled:
@@ -298,12 +301,11 @@ public class HTTP {
 
             let inFlightData = data!
             dispatchOnMain {
-                promise.task = task
-                promise.keep(inFlightData)
+                promise.succeed(inFlightData)
             }
         }
 
-        func perform(promise: DataPromise) {
+        func perform(promise: Promise<Data>) {
             let _sessionActions = HTTPActions()
 
             _sessionActions.didReceiveResponse = { (sessionActions, session, dataTask, response, completionHandler) in
@@ -311,18 +313,17 @@ public class HTTP {
             }
 
             _sessionActions.didComplete = { (sessionActions, session, task, error) in
-                onComplete(promise: promise, task: task, error: error, response: sessionActions.response, data: sessionActions.data)
+                onComplete(promise: promise, error: error, response: sessionActions.response, data: sessionActions.data)
             }
 
             let sharedSession = URLSession.shared
             let config = sharedSession.configuration.copy() as! URLSessionConfiguration
             let session = URLSession(configuration: config, delegate: _sessionActions, delegateQueue: nil)
             let task = session.dataTask(with: request)
-            promise.task = session.dataTask(with: request)
             task.resume()
         }
 
-        func mockPerform(promise: DataPromise) {
+        func mockPerform(promise: Promise<Data>) {
             let mock = mock!
             dispatchOnBackground(afterDelay: mock.delay) {
                 dispatchOnMain {
@@ -331,54 +332,26 @@ public class HTTP {
                     if !successStatusCodes.contains(mock.statusCode) {
                         error = HTTPError(request: request, response: response)
                     }
-                    onComplete(promise: promise, task: nil, error: error, response: response, data: mock.data)
+                    onComplete(promise: promise, error: error, response: response, data: mock.data)
                 }
             }
         }
 
+        let promise = httpEventLoopGroup.next().makePromise(of: Data.self)
+
         if mock != nil {
-            return DataPromise(with: mockPerform)
+            mockPerform(promise: promise)
         } else {
-            return DataPromise(with: perform)
+            perform(promise: promise)
         }
+
+        return promise.futureResult
     }
 
 
-    public static func retrieve(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> SuccessPromise {
-        return retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock, name: name).succeed()
+    public static func retrieve(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<Void> {
+        return retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock, name: name).transform(to: ())
     }
-
-    
-//    public static func retrieveJSON(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> JSONPromise {
-//        var request = request
-//        request.setAcceptContentType(.json)
-//
-//        return retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock, name: name).then { data in
-//            return try data |> JSON.init
-//        }
-//    }
-//
-//
-//    public static func retrieveJSONDictionary(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> JSONPromise {
-//        return retrieveJSON(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock, name: name).then { json in
-//            guard json.value is JSON.Dictionary else {
-//                throw HTTPUtilsError.expectedJSONDict
-//            }
-//            return json
-//        }
-//    }
-
-
-    //    #if !os(Linux)
-    //    public static func retrieveImage(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> ImagePromise {
-    //        return retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock, name: name).then { data in
-    //            guard let image = OSImage(data: data) else {
-    //                throw HTTPUtilsError.expectedImage
-    //            }
-    //            return image
-    //        }
-    //    }
-    //    #endif
 }
 
 extension URLSessionTask: Cancelable {

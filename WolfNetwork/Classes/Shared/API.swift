@@ -25,6 +25,7 @@
 import Foundation
 import WolfConcurrency
 import WolfApp
+import WolfNIO
 
 extension Notification.Name {
     public static let loggedOut = Notification.Name("loggedOut")
@@ -115,65 +116,70 @@ open class API<T: AuthorizationProtocol> {
         return request
     }
 
-    public func newPromise<T: Decodable, Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Promise<T> {
-        do {
-            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
-            return HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||> { data in
-                return try JSONDecoder().decode(T.self, from: data)
-            } ||? { (error, promise) in
-                self.handle(error: error, promise: promise)
-            }
-        } catch let error {
-            return Promise<T>(error: error)
-        }
-    }
-
-    public func newPromise<T: Decodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Promise<T> {
-        do {
-            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
-            return HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||> { data in
-                return try JSONDecoder().decode(T.self, from: data)
-            } ||? { (error, promise) in
-                self.handle(error: error, promise: promise)
-            }
-        } catch let error {
-            return Promise<T>(error: error)
-        }
-    }
-
-    public func newPromise<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> SuccessPromise {
-        do {
-            let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth, body: body)
-            return HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||? { (error, promise) in
-                self.handle(error: error, promise: promise)
-            }
-        } catch let error {
-            return SuccessPromise(error: error)
-        }
-    }
-
-    public func newPromise(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> SuccessPromise {
-        do {
-            let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth)
-            return HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock) ||? { (error, promise) in
-                self.handle(error: error, promise: promise)
-            }
-        } catch let error {
-            return SuccessPromise(error: error)
-        }
-    }
-
-    private func handle<T>(error: Swift.Error, promise: Promise<T>) {
+    private func handle(error: Swift.Error) {
         if error.httpStatusCode == .unauthorized {
-            promise.cancel()
             logout()
-        } else {
-            promise.fail(error)
         }
     }
 
     public func logout() {
         authorization = nil
         notificationCenter.post(name: .loggedOut, object: self)
+    }
+
+    public func call<T: Decodable, Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
+            let futureData = HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            futureData.whenFailure { error in
+                self.handle(error: error)
+            }
+            return futureData.flatMapThrowing { data in
+                return try JSONDecoder().decode(T.self, from: data)
+            }
+        } catch {
+            return httpEventLoopGroup.next().future(error: error)
+        }
+    }
+
+    public func call<T: Decodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
+            let futureData = HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            futureData.whenFailure { error in
+                self.handle(error: error)
+            }
+            return futureData.flatMapThrowing { data in
+                return try JSONDecoder().decode(T.self, from: data)
+            }
+        } catch {
+            return httpEventLoopGroup.next().future(error: error)
+        }
+    }
+
+    public func call<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<Void> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth, body: body)
+            let future = HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            future.whenFailure { error in
+                self.handle(error: error)
+            }
+            return future
+        } catch {
+            return httpEventLoopGroup.next().future(error: error)
+        }
+    }
+
+    public func call(method: HTTPMethod, scheme: HTTPScheme = .https, path: [Any]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<Void> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth)
+            let future = HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            future.whenFailure { error in
+                self.handle(error: error)
+            }
+            return future
+        } catch {
+            return httpEventLoopGroup.next().future(error: error)
+        }
     }
 }
