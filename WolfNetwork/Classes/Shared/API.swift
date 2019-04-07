@@ -134,7 +134,7 @@ open class API<T: AuthorizationProtocol> {
             futureData.whenFailure { error in
                 self.handle(error: error)
             }
-            return futureData.flatMapThrowing { data in
+            return futureData.flatMapThrowing { (_, data) in
                 return try JSONDecoder().decode(T.self, from: data)
             }
         } catch {
@@ -149,7 +149,7 @@ open class API<T: AuthorizationProtocol> {
             futureData.whenFailure { error in
                 self.handle(error: error)
             }
-            return futureData.flatMapThrowing { data in
+            return futureData.flatMapThrowing { (_, data) in
                 return try JSONDecoder().decode(T.self, from: data)
             }
         } catch {

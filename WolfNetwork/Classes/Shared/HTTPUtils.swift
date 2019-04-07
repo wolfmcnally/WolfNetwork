@@ -210,12 +210,12 @@ extension ConnectionType {
 }
 
 public class HTTP {
-    public static func retrieveData(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<Data> {
+    public static func retrieveData(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<(HTTPURLResponse, Data)> {
 
         let name = name ?? request.name
         let token = inFlightTracker?.start(withName: name)
 
-        func onComplete(promise: Promise<Data>, error: Error?, response: URLResponse?, data: Data?) {
+        func onComplete(promise: Promise<(HTTPURLResponse, Data)>, error: Error?, response: URLResponse?, data: Data?) {
             guard error == nil else {
                 switch error {
                 case is Canceled:
@@ -301,11 +301,11 @@ public class HTTP {
 
             let inFlightData = data!
             dispatchOnMain {
-                promise.succeed(inFlightData)
+                promise.succeed((httpResponse, inFlightData))
             }
         }
 
-        func perform(promise: Promise<Data>) {
+        func perform(promise: Promise<(HTTPURLResponse, Data)>) {
             let _sessionActions = HTTPActions()
 
             _sessionActions.didReceiveResponse = { (sessionActions, session, dataTask, response, completionHandler) in
@@ -323,7 +323,7 @@ public class HTTP {
             task.resume()
         }
 
-        func mockPerform(promise: Promise<Data>) {
+        func mockPerform(promise: Promise<(HTTPURLResponse, Data)>) {
             let mock = mock!
             dispatchOnBackground(afterDelay: mock.delay) {
                 dispatchOnMain {
@@ -337,7 +337,7 @@ public class HTTP {
             }
         }
 
-        let promise = httpEventLoopGroup.next().makePromise(of: Data.self)
+        let promise = httpEventLoopGroup.next().makePromise(of: (HTTPURLResponse, Data).self)
 
         if mock != nil {
             mockPerform(promise: promise)
