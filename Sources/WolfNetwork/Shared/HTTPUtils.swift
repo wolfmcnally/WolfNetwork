@@ -23,11 +23,8 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfPipe
-import ExtensibleEnumeratedName
+import WolfCore
 import WolfLog
-import WolfConcurrency
-import WolfFoundation
 import WolfNIO
 
 public let httpEventLoopGroup = NIOTSEventLoopGroup(loopCount: 6, defaultQoS: .userInitiated)

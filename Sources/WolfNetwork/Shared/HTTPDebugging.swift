@@ -23,8 +23,7 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfPipe
-import WolfFoundation
+import WolfCore
 
 extension URLRequest {
     public func printRequest(includeAuxFields: Bool = false, level: Int = 0) {

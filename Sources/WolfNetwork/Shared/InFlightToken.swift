@@ -22,8 +22,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import WolfConcurrency
-import WolfFoundation
+import WolfCore
 import WolfApp
 
 public class InFlightToken: Equatable, Hashable, CustomStringConvertible {

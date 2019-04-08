@@ -23,8 +23,7 @@
 //  SOFTWARE.
 
 import WolfLog
-import WolfConcurrency
-import WolfFoundation
+import WolfCore
 
 public internal(set) var inFlightTracker: InFlightTracker?
 

@@ -8,10 +8,8 @@
 
 import Foundation
 import SystemConfiguration
-import WolfPipe
+import WolfCore
 import WolfLog
-import WolfFoundation
-import WolfConcurrency
 import WolfPubSub
 
 extension LogGroup {
