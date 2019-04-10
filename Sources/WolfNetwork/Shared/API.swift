@@ -79,7 +79,7 @@ open class API<T: AuthorizationProtocol> {
             throw Error.credentialsRequired
         }
 
-        let url = URL(scheme: scheme, host: endpoint.host, basePath: endpoint.basePath, pathComponents: path, query: query)
+        let url = URL(scheme: scheme, host: endpoint.host, port: endpoint.port, basePath: endpoint.basePath, pathComponents: path, query: query)
         var request = URLRequest(url: url)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setClientRequestID()

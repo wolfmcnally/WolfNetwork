@@ -27,11 +27,13 @@ import Foundation
 public struct Endpoint {
     public let name: String
     public let host: String
+    public let port: Int?
     public let basePath: String?
 
-    public init(name: String, host: String, basePath: String? = nil) {
+    public init(name: String, host: String, port: Int? = nil, basePath: String? = nil) {
         self.name = name
         self.host = host
+        self.port = port
         self.basePath = basePath
     }
 }

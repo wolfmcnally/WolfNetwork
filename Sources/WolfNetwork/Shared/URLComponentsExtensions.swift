@@ -59,12 +59,12 @@ extension URLComponents {
 }
 
 extension URLComponents {
-    public init(scheme: HTTPScheme, host: String, basePath: String? = nil, pathComponents: [Any]? = nil, query: [String: String]? = nil) {
+    public init(scheme: HTTPScheme, host: String, port: Int? = nil, basePath: String? = nil, pathComponents: [Any]? = nil, query: [String: String]? = nil) {
         self.init()
 
         self.scheme = scheme.rawValue
-
         self.host = host
+        self.port = port
 
         var components = [String]()
         if let basePath = basePath {
@@ -72,7 +72,7 @@ extension URLComponents {
         }
         if let pathComponents = pathComponents {
             for c in pathComponents {
-                components.append("\(c)")
+                components.append(String(describing: c))
             }
         }
         self.path = "/" + components.joined(separator: "/")
