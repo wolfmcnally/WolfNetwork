@@ -27,8 +27,6 @@ import WolfCore
 import WolfLog
 import WolfNIO
 
-public let httpEventLoopGroup = NIOTSEventLoopGroup(loopCount: 6, defaultQoS: .userInitiated)
-
 public enum HTTPUtilsError: Error {
     case expectedJSONDict
     case expectedImage
@@ -230,9 +228,7 @@ public class HTTP {
                         logError("retrieveData returned error")
                     }
                 }
-                dispatchOnMain {
-                    promise.fail(error!)
-                }
+                promise.fail(error!)
                 return
             }
 
@@ -250,9 +246,7 @@ public class HTTP {
                     logError("no data returned")
                 }
 
-                dispatchOnMain {
-                    promise.fail(error)
-                }
+                promise.fail(error)
                 return
             }
 
@@ -266,9 +260,7 @@ public class HTTP {
                     logError("unknown response code: \(httpResponse.statusCode)")
                 }
 
-                dispatchOnMain {
-                    promise.fail(error)
-                }
+                promise.fail(error)
                 return
             }
 
@@ -286,9 +278,7 @@ public class HTTP {
                     }
                 }
 
-                dispatchOnMain {
-                    promise.fail(error)
-                }
+                promise.fail(error)
                 return
             }
 
@@ -297,9 +287,7 @@ public class HTTP {
             }
 
             let inFlightData = data!
-            dispatchOnMain {
-                promise.succeed((httpResponse, inFlightData))
-            }
+            promise.succeed((httpResponse, inFlightData))
         }
 
         func perform(promise: Promise<(HTTPURLResponse, Data)>) {
@@ -323,18 +311,16 @@ public class HTTP {
         func mockPerform(promise: Promise<(HTTPURLResponse, Data)>) {
             let mock = mock!
             dispatchOnBackground(afterDelay: mock.delay) {
-                dispatchOnMain {
-                    let response = HTTPURLResponse(url: request.url!, statusCode: mock.statusCode.rawValue, httpVersion: nil, headerFields: nil)!
-                    var error: Error?
-                    if !successStatusCodes.contains(mock.statusCode) {
-                        error = HTTPError(request: request, response: response)
-                    }
-                    onComplete(promise: promise, error: error, response: response, data: mock.data)
+                let response = HTTPURLResponse(url: request.url!, statusCode: mock.statusCode.rawValue, httpVersion: nil, headerFields: nil)!
+                var error: Error?
+                if !successStatusCodes.contains(mock.statusCode) {
+                    error = HTTPError(request: request, response: response)
                 }
+                onComplete(promise: promise, error: error, response: response, data: mock.data)
             }
         }
 
-        let promise = httpEventLoopGroup.next().makePromise(of: (HTTPURLResponse, Data).self)
+        let promise = MainEventLoop.shared.makePromise(of: (HTTPURLResponse, Data).self)
 
         if mock != nil {
             mockPerform(promise: promise)
