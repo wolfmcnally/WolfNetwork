@@ -92,6 +92,7 @@ extension ContentType {
     public static let pdf = ContentType("application/pdf")
     public static let mp4 = ContentType("video/mp4")
     public static let vcard = ContentType("text/vcard")
+    public static let svg = ContentType("image/svg+xml")
 }
 
 // See also: https://developer.apple.com/library/content/documentation/FileManagement/Conceptual/understanding_utis/understand_utis_intro/understand_utis_intro.html#//apple_ref/doc/uid/TP40001319-CH201-SW1
