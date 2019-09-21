@@ -74,13 +74,22 @@ open class API<T: AuthorizationProtocol> {
         }
     }
 
-    private func _newRequest(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool) throws -> URLRequest {
+    private func _newRequest(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool) throws -> URLRequest {
         guard !isAuth || authorization != nil else {
             throw Error.credentialsRequired
         }
 
-        let url = URL(scheme: scheme ?? endpoint.scheme, host: endpoint.host, port: endpoint.port, basePath: endpoint.basePath, pathComponents: path, query: query)
-        var request = URLRequest(url: url)
+        let queryItems: [URLQueryItem]?
+        if let query = query {
+            queryItems = query.map {
+                URLQueryItem(name: $0.0, value: $0.1)
+            }
+        } else {
+            queryItems = nil
+        }
+        var urlComponents = URLComponents(scheme: scheme ?? endpoint.scheme, host: endpoint.host, port: endpoint.port, basePath: endpoint.basePath, pathComponents: path)
+        urlComponents.queryItems = queryItems
+        var request = URLRequest(url: urlComponents.url!)
         request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setClientRequestID()
         request.setMethod(method)
@@ -92,7 +101,7 @@ open class API<T: AuthorizationProtocol> {
         return request
     }
 
-    public func newRequest(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool) throws -> URLRequest {
+    public func newRequest(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool) throws -> URLRequest {
         let request = try _newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
 
         if debugPrintRequests {
@@ -102,7 +111,7 @@ open class API<T: AuthorizationProtocol> {
         return request
     }
 
-    public func newRequest<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool, body: Body) throws -> URLRequest {
+    public func newRequest<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool, body: Body) throws -> URLRequest {
         var request = try _newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
         let data = try JSONEncoder().encode(body)
         request.httpBody = data
@@ -127,7 +136,7 @@ open class API<T: AuthorizationProtocol> {
         notificationCenter.post(name: .loggedOut, object: self)
     }
 
-    public func call<T: Decodable, Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
+    public func call<T: Decodable, Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
             let futureData = HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
@@ -142,7 +151,7 @@ open class API<T: AuthorizationProtocol> {
         }
     }
 
-    public func call<T: Decodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: [String: String]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
+    public func call<T: Decodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
             let futureData = HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
