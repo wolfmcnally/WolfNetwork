@@ -147,7 +147,7 @@ open class API<T: AuthorizationProtocol> {
                 return try JSONDecoder().decode(T.self, from: data)
             }
         } catch {
-            return MainEventLoop.shared.future(error: error)
+            return MainEventLoop.shared.makeFailedFuture(error)
         }
     }
 
@@ -162,7 +162,7 @@ open class API<T: AuthorizationProtocol> {
                 return try JSONDecoder().decode(T.self, from: data)
             }
         } catch {
-            return MainEventLoop.shared.future(error: error)
+            return MainEventLoop.shared.makeFailedFuture(error)
         }
     }
 
@@ -175,7 +175,7 @@ open class API<T: AuthorizationProtocol> {
             }
             return future
         } catch {
-            return MainEventLoop.shared.future(error: error)
+            return MainEventLoop.shared.makeFailedFuture(error)
         }
     }
 
@@ -188,7 +188,7 @@ open class API<T: AuthorizationProtocol> {
             }
             return future
         } catch {
-            return MainEventLoop.shared.future(error: error)
+            return MainEventLoop.shared.makeFailedFuture(error)
         }
     }
 }
