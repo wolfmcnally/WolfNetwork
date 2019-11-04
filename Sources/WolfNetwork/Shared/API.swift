@@ -136,40 +136,40 @@ open class API<T: AuthorizationProtocol> {
         notificationCenter.post(name: .loggedOut, object: self)
     }
 
-    public func call<T: Decodable, Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
+    public func call<T: Decodable, Body: Encodable>(returning returnType: T.Type, method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool = false, body: Body, session: URLSession?, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
-            let futureData = HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            let futureData = HTTP.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
             futureData.whenFailure { error in
                 self.handle(error: error)
             }
             return futureData.flatMapThrowing { (_, data) in
-                return try JSONDecoder().decode(T.self, from: data)
+                return try JSONDecoder().decode(returnType, from: data)
             }
         } catch {
             return MainEventLoop.shared.makeFailedFuture(error)
         }
     }
 
-    public func call<T: Decodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
+    public func call<T: Decodable>(returning returnType: T.Type, method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool = false, session: URLSession?, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<T> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
-            let futureData = HTTP.retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            let futureData = HTTP.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
             futureData.whenFailure { error in
                 self.handle(error: error)
             }
             return futureData.flatMapThrowing { (_, data) in
-                return try JSONDecoder().decode(T.self, from: data)
+                return try JSONDecoder().decode(returnType, from: data)
             }
         } catch {
             return MainEventLoop.shared.makeFailedFuture(error)
         }
     }
 
-    public func call<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, isAuth: Bool = false, body: Body, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<Void> {
+    public func call<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, isAuth: Bool = false, body: Body, session: URLSession?, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<Void> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth, body: body)
-            let future = HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            let future = HTTP.retrieve(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
             future.whenFailure { error in
                 self.handle(error: error)
             }
@@ -179,10 +179,10 @@ open class API<T: AuthorizationProtocol> {
         }
     }
 
-    public func call(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, isAuth: Bool = false, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<Void> {
+    public func call(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, isAuth: Bool = false, session: URLSession?, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<Void> {
         do {
             let request = try self.newRequest(method: method, scheme: scheme, path: path, isAuth: isAuth)
-            let future = HTTP.retrieve(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            let future = HTTP.retrieve(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
             future.whenFailure { error in
                 self.handle(error: error)
             }

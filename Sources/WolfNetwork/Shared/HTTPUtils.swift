@@ -206,7 +206,7 @@ extension ConnectionType {
 }
 
 public class HTTP {
-    public static func retrieveData(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<(HTTPURLResponse, Data)> {
+    public static func retrieveData(with request: URLRequest, session: URLSession? = nil, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<(HTTPURLResponse, Data)> {
 
         let name = name ?? request.name
         let token = inFlightTracker?.start(withName: name)
@@ -291,7 +291,7 @@ public class HTTP {
             promise.succeed((httpResponse, inFlightData))
         }
 
-        func perform(promise: Promise<(HTTPURLResponse, Data)>) {
+        func perform(promise: Promise<(HTTPURLResponse, Data)>, session: URLSession?) {
             let _sessionActions = HTTPActions()
 
             _sessionActions.didReceiveResponse = { (sessionActions, session, dataTask, response, completionHandler) in
@@ -302,8 +302,8 @@ public class HTTP {
                 onComplete(promise: promise, error: error, response: sessionActions.response, data: sessionActions.data)
             }
 
-            let sharedSession = URLSession.shared
-            let config = sharedSession.configuration.copy() as! URLSessionConfiguration
+            let mySession = session ?? URLSession.shared
+            let config = mySession.configuration.copy() as! URLSessionConfiguration
             let session = URLSession(configuration: config, delegate: _sessionActions, delegateQueue: nil)
             let task = session.dataTask(with: request)
             task.resume()
@@ -326,15 +326,15 @@ public class HTTP {
         if mock != nil {
             mockPerform(promise: promise)
         } else {
-            perform(promise: promise)
+            perform(promise: promise, session: session)
         }
 
         return promise.futureResult
     }
 
 
-    public static func retrieve(with request: URLRequest, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<Void> {
-        return retrieveData(with: request, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock, name: name).transform(to: ())
+    public static func retrieve(with request: URLRequest, session: URLSession? = nil, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil, name: String? = nil) -> Future<Void> {
+        return retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock, name: name).transform(to: ())
     }
 }
 
