@@ -21,11 +21,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
+#if canImport(Combine)
 import Foundation
 import WolfCore
-#if canImport(Combine)
 import Combine
-#endif
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, *)
 public class HTTPCombine {
@@ -98,3 +97,4 @@ public class HTTPCombine {
         }
     }
 }
+#endif

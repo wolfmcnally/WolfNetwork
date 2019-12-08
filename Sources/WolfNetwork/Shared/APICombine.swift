@@ -22,10 +22,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-import Foundation
 #if canImport(Combine)
+import Foundation
 import Combine
-#endif
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, *)
 extension API {
@@ -155,12 +154,4 @@ extension API {
         .eraseToAnyPublisher()
     }
 }
-
-//                    .sink(receiveCompletion: { completion in
-//                        if case let .failure(error) = completion {
-//                            promise(.failure(error))
-//                            processes.remove(cancellable)
-//                        }
-//                    }) { value in
-//                        promise(.success(value))
-//                        processes.remove(cancellable)
+#endif
