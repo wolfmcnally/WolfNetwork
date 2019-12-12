@@ -126,6 +126,31 @@ extension API {
         return request
     }
 
+    public func newRequest(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool, body: Data) throws -> URLRequest {
+        var request = try _newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
+        request.httpBody = body
+        request.setContentLength(body.count)
+
+        if debugPrintRequests {
+            request.printRequest()
+        }
+
+        return request
+    }
+
+    public func newRequest(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool, body: String) throws -> URLRequest {
+        var request = try _newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
+        let data = body |> toUTF8
+        request.httpBody = data
+        request.setContentLength(data.count)
+
+        if debugPrintRequests {
+            request.printRequest()
+        }
+
+        return request
+    }
+
     public func newRequest<Body: Encodable>(method: HTTPMethod, scheme: HTTPScheme? = nil, path: [Any]? = nil, query: KeyValuePairs<String, String>? = nil, isAuth: Bool, body: Body) throws -> URLRequest {
         var request = try _newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
         let data = try JSONEncoder().encode(body)

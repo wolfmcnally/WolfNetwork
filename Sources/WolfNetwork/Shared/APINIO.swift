@@ -25,6 +25,138 @@ import Foundation
 import WolfNIO
 
 extension API {
+    public func callNIO(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: Data,
+        session: URLSession?,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> Future<Data> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
+            let futureData = HTTPNIO.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            futureData.whenFailure { error in
+                self.handle(error: error)
+            }
+            return futureData.map { (_, data) in
+                data
+            }
+        } catch {
+            return MainEventLoop.shared.future(error: error)
+        }
+    }
+
+    public func callNIO<T: Decodable>(
+        returning returnType: T.Type,
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: Data,
+        session: URLSession?,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> Future<T> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
+            let futureData = HTTPNIO.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            futureData.whenFailure { error in
+                self.handle(error: error)
+            }
+            return futureData.flatMapThrowing { (_, data) in
+                return try JSONDecoder().decode(returnType, from: data)
+            }
+        } catch {
+            return MainEventLoop.shared.future(error: error)
+        }
+    }
+
+    public func callNIO(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: String,
+        session: URLSession?,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> Future<Data> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
+            let futureData = HTTPNIO.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            futureData.whenFailure { error in
+                self.handle(error: error)
+            }
+            return futureData.map { (_, data) in
+                data
+            }
+        } catch {
+            return MainEventLoop.shared.future(error: error)
+        }
+    }
+
+    public func callNIO<T: Decodable>(
+        returning returnType: T.Type,
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: String,
+        session: URLSession?,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> Future<T> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
+            let futureData = HTTPNIO.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            futureData.whenFailure { error in
+                self.handle(error: error)
+            }
+            return futureData.flatMapThrowing { (_, data) in
+                return try JSONDecoder().decode(returnType, from: data)
+            }
+        } catch {
+            return MainEventLoop.shared.future(error: error)
+        }
+    }
+
+    public func callNIO<Body: Encodable>(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: Body,
+        session: URLSession?,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> Future<Data> {
+        do {
+            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
+            let futureData = HTTPNIO.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+            futureData.whenFailure { error in
+                self.handle(error: error)
+            }
+            return futureData.map { (_, data) in
+                data
+            }
+        } catch {
+            return MainEventLoop.shared.future(error: error)
+        }
+    }
+
     public func callNIO<T: Decodable, Body: Encodable>(
         returning returnType: T.Type,
         method: HTTPMethod,

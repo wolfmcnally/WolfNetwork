@@ -33,11 +33,47 @@ extension API {
         scheme: HTTPScheme? = nil,
         path: [Any]? = nil,
         query: KeyValuePairs<String, String>? = nil,
-        isAuth: Bool
+        isAuth: Bool = false
     ) -> Future<URLRequest, Error> {
         Future { promise in
             do {
                 let req = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
+                promise(.success(req))
+            } catch {
+                promise(Result.failure(error))
+            }
+        }
+    }
+
+    public func makeRequest(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: Data
+    ) -> Future<URLRequest, Error> {
+        Future { promise in
+            do {
+                let req = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
+                promise(.success(req))
+            } catch {
+                promise(Result.failure(error))
+            }
+        }
+    }
+
+    public func makeRequest(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: String
+    ) -> Future<URLRequest, Error> {
+        Future { promise in
+            do {
+                let req = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body)
                 promise(.success(req))
             } catch {
                 promise(Result.failure(error))
@@ -50,7 +86,7 @@ extension API {
         scheme: HTTPScheme? = nil,
         path: [Any]? = nil,
         query: KeyValuePairs<String, String>? = nil,
-        isAuth: Bool,
+        isAuth: Bool = false,
         body: Body
     ) -> Future<URLRequest, Error> {
         Future { promise in
@@ -66,6 +102,25 @@ extension API {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, *)
 extension API {
+    public func call(
+        returning returnType: T.Type,
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        session: URLSession? = nil,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> AnyPublisher<Data, Error> {
+        makeRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth).flatMap { request in
+            HTTPCombine.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+                .map { $0.data }
+        }
+        .eraseToAnyPublisher()
+    }
+
     public func call<T: Decodable>(
         returning returnType: T.Type,
         method: HTTPMethod,
@@ -73,7 +128,7 @@ extension API {
         path: [Any]? = nil,
         query: KeyValuePairs<String, String>? = nil,
         isAuth: Bool = false,
-        session: URLSession?,
+        session: URLSession? = nil,
         successStatusCodes: [StatusCode] = [.ok],
         expectedFailureStatusCodes: [StatusCode] = [],
         mock: Mock? = nil
@@ -84,27 +139,36 @@ extension API {
                 .decode(type: T.self, decoder: JSONDecoder())
         }
         .eraseToAnyPublisher()
-
-//        do {
-//            let request = try self.newRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth)
-//            return HTTPCombine.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
-//                .map { $0.1 }
-//                .decode(type: T.self, decoder: JSONDecoder())
-//                .eraseToAnyPublisher()
-//        } catch {
-//            return Fail(error: error).eraseToAnyPublisher()
-//        }
     }
 
-    public func call<T: Decodable, Body: Encodable>(
+    public func call(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: Data,
+        session: URLSession? = nil,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> AnyPublisher<Data, Error> {
+        makeRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body).flatMap { request in
+            HTTPCombine.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+                .map { $0.data }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    public func call<T: Decodable>(
         returning returnType: T.Type,
         method: HTTPMethod,
         scheme: HTTPScheme? = nil,
         path: [Any]? = nil,
         query: KeyValuePairs<String, String>? = nil,
         isAuth: Bool = false,
-        body: Body,
-        session: URLSession?,
+        body: Data,
+        session: URLSession? = nil,
         successStatusCodes: [StatusCode] = [.ok],
         expectedFailureStatusCodes: [StatusCode] = [],
         mock: Mock? = nil
@@ -123,7 +187,87 @@ extension API {
         path: [Any]? = nil,
         query: KeyValuePairs<String, String>? = nil,
         isAuth: Bool = false,
-        session: URLSession?,
+        body: String,
+        session: URLSession? = nil,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> AnyPublisher<Data, Error> {
+        makeRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body).flatMap { request in
+            HTTPCombine.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+                .map { $0.data }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    public func call<T: Decodable>(
+        returning returnType: T.Type,
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: String,
+        session: URLSession? = nil,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> AnyPublisher<T, Error> {
+        makeRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body).flatMap { request in
+            HTTPCombine.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+                .map { $0.data }
+                .decode(type: T.self, decoder: JSONDecoder())
+        }
+        .eraseToAnyPublisher()
+    }
+
+    public func call<Body: Encodable>(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: Body,
+        session: URLSession? = nil,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> AnyPublisher<Data, Error> {
+        makeRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body).flatMap { request in
+            HTTPCombine.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+                .map { $0.data }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    public func call<T: Decodable, Body: Encodable>(
+        returning returnType: T.Type,
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        body: Body,
+        session: URLSession? = nil,
+        successStatusCodes: [StatusCode] = [.ok],
+        expectedFailureStatusCodes: [StatusCode] = [],
+        mock: Mock? = nil
+    ) -> AnyPublisher<T, Error> {
+        makeRequest(method: method, scheme: scheme, path: path, query: query, isAuth: isAuth, body: body).flatMap { request in
+            HTTPCombine.retrieveData(with: request, session: session, successStatusCodes: successStatusCodes, expectedFailureStatusCodes: expectedFailureStatusCodes, mock: mock)
+                .map { $0.data }
+                .decode(type: T.self, decoder: JSONDecoder())
+        }
+        .eraseToAnyPublisher()
+    }
+
+    public func call(
+        method: HTTPMethod,
+        scheme: HTTPScheme? = nil,
+        path: [Any]? = nil,
+        query: KeyValuePairs<String, String>? = nil,
+        isAuth: Bool = false,
+        session: URLSession? = nil,
         successStatusCodes: [StatusCode] = [.ok],
         expectedFailureStatusCodes: [StatusCode] = [],
         mock: Mock? = nil
@@ -142,7 +286,7 @@ extension API {
         query: KeyValuePairs<String, String>? = nil,
         isAuth: Bool = false,
         body: Body,
-        session: URLSession?,
+        session: URLSession? = nil,
         successStatusCodes: [StatusCode] = [.ok],
         expectedFailureStatusCodes: [StatusCode] = [],
         mock: Mock? = nil
