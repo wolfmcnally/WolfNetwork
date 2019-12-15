@@ -23,7 +23,7 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfCore
+import WolfFoundation
 
 extension Error {
     public var httpStatusCode: StatusCode? {

@@ -23,9 +23,11 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfCore
 import WolfLog
 import WolfNIO
+import ExtensibleEnumeratedName
+import WolfFoundation
+import WolfConcurrency
 
 public enum HTTPUtilsError: Error {
     case expectedJSONDict

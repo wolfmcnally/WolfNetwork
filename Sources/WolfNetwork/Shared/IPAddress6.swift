@@ -24,7 +24,7 @@
 
 import Foundation
 import WolfLog
-import WolfCore
+import WolfFoundation
 
 public class IPAddress6 {
     typealias Run = Range<Int>

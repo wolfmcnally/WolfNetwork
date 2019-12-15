@@ -23,8 +23,9 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfCore
 import WolfLog
+import WolfFoundation
+import WolfPipe
 
 extension Data {
     public static func ipAddress4(from data: Data) -> String {

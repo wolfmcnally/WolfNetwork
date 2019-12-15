@@ -8,9 +8,11 @@
 
 import Foundation
 import SystemConfiguration
-import WolfCore
 import WolfLog
 import WolfPubSub
+import WolfConcurrency
+import WolfPipe
+import WolfFoundation
 
 extension LogGroup {
     public static let reachability = LogGroup("reachability")

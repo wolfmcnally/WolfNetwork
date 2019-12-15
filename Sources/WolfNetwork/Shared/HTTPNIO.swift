@@ -22,9 +22,10 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfCore
 import WolfNIO
 import WolfLog
+import WolfFoundation
+import WolfConcurrency
 
 public class HTTPNIO {
     public static func retrieveData(with request: URLRequest, session: URLSession? = nil, successStatusCodes: [StatusCode] = [.ok], expectedFailureStatusCodes: [StatusCode] = [], mock: Mock? = nil) -> Future<(HTTPURLResponse, Data)> {

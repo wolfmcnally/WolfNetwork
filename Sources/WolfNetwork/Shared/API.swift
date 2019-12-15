@@ -23,8 +23,9 @@
 //  SOFTWARE.
 
 import Foundation
-import WolfCore
 import WolfApp
+import WolfPipe
+import WolfFoundation
 #if canImport(Combine)
 import Combine
 #endif
